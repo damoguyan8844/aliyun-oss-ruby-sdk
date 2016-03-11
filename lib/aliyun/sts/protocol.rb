@@ -47,11 +47,11 @@ module Aliyun
 
         creds_node = doc.at_css("Credentials")
         creds = {
-          session_name: session,
-          access_key_id: get_node_text(creds_node, 'AccessKeyId'),
-          access_key_secret: get_node_text(creds_node, 'AccessKeySecret'),
-          security_token: get_node_text(creds_node, 'SecurityToken'),
-          expiration: get_node_text(
+          :session_name => session,
+          :access_key_id => get_node_text(creds_node, 'AccessKeyId'),
+          :access_key_secret => get_node_text(creds_node, 'AccessKeySecret'),
+          :security_token => get_node_text(creds_node, 'SecurityToken'),
+          :expiration => get_node_text(
             creds_node, 'Expiration') { |x| Time.parse(x) },
         }
 

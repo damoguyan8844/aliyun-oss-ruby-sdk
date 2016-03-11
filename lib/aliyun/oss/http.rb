@@ -275,7 +275,7 @@ module Aliyun
         # the headers hash."
         headers[:params] = (sub_res || {}).merge(http_options[:query] || {})
 
-        block_response = ->(r) { handle_response(r, &block) } if block
+        block_response = lambda { |r| handle_response(r, &block) } if block
         r = RestClient::Request.execute(
           :method => verb,
           :url => get_request_url(bucket, object),

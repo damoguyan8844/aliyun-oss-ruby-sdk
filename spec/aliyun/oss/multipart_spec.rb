@@ -111,7 +111,7 @@ module Aliyun
               'people' => 'mary'
             })
 
-          expect(WebMock).to have_requested(:post, request_path)
+          expect(WebMock).to have_requested(:post, request_path)\
                          .with(:body => nil, :query => query,
                                :headers => {
                                  'x-oss-meta-year' => '2015',
@@ -128,7 +128,7 @@ module Aliyun
 
           txn_id = @protocol.initiate_multipart_upload(@bucket, @object)
 
-          expect(WebMock).to have_requested(:post, request_path)
+          expect(WebMock).to have_requested(:post, request_path)\
             .with(:body => nil, :query => query)
           expect(txn_id).to eq(return_txn_id)
         end
@@ -138,15 +138,15 @@ module Aliyun
 
           code = 'InvalidArgument'
           message = 'Invalid argument.'
-          stub_request(:post, request_path)
-            .with(:query => query)
+          stub_request(:post, request_path)\
+            .with(:query => query)\
             .to_return(:status => 400, :body => mock_error(code, message))
 
           expect {
             @protocol.initiate_multipart_upload(@bucket, @object)
           }.to raise_error(ServerError, err(message))
 
-          expect(WebMock).to have_requested(:post, request_path)
+          expect(WebMock).to have_requested(:post, request_path)\
             .with(:body => nil, :query => query)
         end
       end # initiate multipart
@@ -162,7 +162,7 @@ module Aliyun
 
           @protocol.upload_part(@bucket, @object, txn_id, part_no) {}
 
-          expect(WebMock).to have_requested(:put, request_path)
+          expect(WebMock).to have_requested(:put, request_path)\
             .with(:body => nil, :query => query)
         end
 
@@ -172,8 +172,8 @@ module Aliyun
           query = {'partNumber' => part_no, 'uploadId' => txn_id}
 
           return_etag = 'etag_1'
-          stub_request(:put, request_path)
-            .with(:query => query)
+          stub_request(:put, request_path)\
+            .with(:query => query)\
             .to_return(:headers => {'ETag' => return_etag})
 
           body = 'hello world'
@@ -181,7 +181,7 @@ module Aliyun
             content << body
           end
 
-          expect(WebMock).to have_requested(:put, request_path)
+          expect(WebMock).to have_requested(:put, request_path)\
             .with(:body => body, :query => query)
           expect(p.number).to eq(part_no)
           expect(p.etag).to eq(return_etag)
@@ -195,15 +195,15 @@ module Aliyun
           code = 'InvalidArgument'
           message = 'Invalid argument.'
 
-          stub_request(:put, request_path)
-            .with(:query => query)
+          stub_request(:put, request_path)\
+            .with(:query => query)\
             .to_return(:status => 400, :body => mock_error(code, message))
 
           expect {
             @protocol.upload_part(@bucket, @object, txn_id, part_no) {}
           }.to raise_error(ServerError, err(message))
 
-          expect(WebMock).to have_requested(:put, request_path)
+          expect(WebMock).to have_requested(:put, request_path)\
             .with(:body => nil, :query => query)
         end
 
@@ -219,12 +219,12 @@ module Aliyun
           query = {'partNumber' => part_no, 'uploadId' => txn_id}
           headers = {'x-oss-copy-source' => copy_source}
 
-          stub_request(:put, request_path)
+          stub_request(:put, request_path)\
             .with(:query => query, :headers => headers)
 
           @protocol.upload_part_by_copy(@bucket, @object, txn_id, part_no, 'src_obj')
 
-          expect(WebMock).to have_requested(:put, request_path)
+          expect(WebMock).to have_requested(:put, request_path)\
             .with(:body => nil, :query => query, :headers => headers)
         end
 
@@ -237,13 +237,13 @@ module Aliyun
           headers = {'x-oss-copy-source' => copy_source}
           return_etag = 'etag_1'
 
-          stub_request(:put, request_path)
-            .with(:query => query, :headers => headers)
+          stub_request(:put, request_path)\
+            .with(:query => query, :headers => headers)\
             .to_return(:headers => {'ETag' => return_etag})
 
           p = @protocol.upload_part_by_copy(@bucket, @object, txn_id, part_no, 'src_obj')
 
-          expect(WebMock).to have_requested(:put, request_path)
+          expect(WebMock).to have_requested(:put, request_path)\
             .with(:body => nil, :query => query, :headers => headers)
           expect(p.number).to eq(part_no)
           expect(p.etag).to eq(return_etag)
@@ -267,8 +267,8 @@ module Aliyun
           }
           return_etag = 'etag_1'
 
-          stub_request(:put, request_path)
-            .with(:query => query, :headers => headers)
+          stub_request(:put, request_path)\
+            .with(:query => query, :headers => headers)\
             .to_return(:headers => {'ETag' => return_etag})
 
           p = @protocol.upload_part_by_copy(
@@ -281,7 +281,7 @@ module Aliyun
                :if_unmatch_etag => 'ume'
              }})
 
-          expect(WebMock).to have_requested(:put, request_path)
+          expect(WebMock).to have_requested(:put, request_path)\
             .with(:body => nil, :query => query, :headers => headers)
           expect(p.number).to eq(part_no)
           expect(p.etag).to eq(return_etag)
@@ -297,15 +297,15 @@ module Aliyun
 
           code = 'PreconditionFailed'
           message = 'Precondition check failed.'
-          stub_request(:put, request_path)
-            .with(:query => query, :headers => headers)
+          stub_request(:put, request_path)\
+            .with(:query => query, :headers => headers)\
             .to_return(:status => 412, :body => mock_error(code, message))
 
           expect {
             @protocol.upload_part_by_copy(@bucket, @object, txn_id, part_no, 'src_obj')
           }.to raise_error(ServerError, err(message))
 
-          expect(WebMock).to have_requested(:put, request_path)
+          expect(WebMock).to have_requested(:put, request_path)\
             .with(:body => nil, :query => query, :headers => headers)
         end
       end # upload part by copy object
@@ -335,7 +335,7 @@ module Aliyun
             }
           end.to_xml
 
-          expect(WebMock).to have_requested(:post, request_path)
+          expect(WebMock).to have_requested(:post, request_path)\
             .with(:body => parts_body, :query => query)
         end
 
@@ -346,15 +346,15 @@ module Aliyun
           code = 'InvalidDigest'
           message = 'Content md5 does not match.'
 
-          stub_request(:post, request_path)
-            .with(:query => query)
+          stub_request(:post, request_path)\
+            .with(:query => query)\
             .to_return(:status => 400, :body => mock_error(code, message))
 
           expect {
             @protocol.complete_multipart_upload(@bucket, @object, txn_id, [])
           }.to raise_error(ServerError, err(message))
 
-          expect(WebMock).to have_requested(:post, request_path)
+          expect(WebMock).to have_requested(:post, request_path)\
             .with(:query => query)
         end
       end # commit multipart
@@ -370,7 +370,7 @@ module Aliyun
 
           @protocol.abort_multipart_upload(@bucket, @object, txn_id)
 
-          expect(WebMock).to have_requested(:delete, request_path)
+          expect(WebMock).to have_requested(:delete, request_path)\
             .with(:body => nil, :query => query)
         end
 
@@ -381,15 +381,15 @@ module Aliyun
           code = 'NoSuchUpload'
           message = 'The multipart transaction does not exist.'
 
-          stub_request(:delete, request_path)
-            .with(:query => query)
+          stub_request(:delete, request_path)\
+            .with(:query => query)\
             .to_return(:status => 404, :body => mock_error(code, message))
 
           expect {
             @protocol.abort_multipart_upload(@bucket, @object, txn_id)
           }.to raise_error(ServerError, err(message))
 
-          expect(WebMock).to have_requested(:delete, request_path)
+          expect(WebMock).to have_requested(:delete, request_path)\
             .with(:body => nil, :query => query)
         end
       end # abort multipart
@@ -404,7 +404,7 @@ module Aliyun
 
           @protocol.list_multipart_uploads(@bucket)
 
-          expect(WebMock).to have_requested(:get, request_path)
+          expect(WebMock).to have_requested(:get, request_path)\
             .with(:body => nil, :query => query)
         end
 
@@ -430,7 +430,7 @@ module Aliyun
             :encoding => KeyEncoding::URL
           )
 
-          expect(WebMock).to have_requested(:get, request_path)
+          expect(WebMock).to have_requested(:get, request_path)\
             .with(:body => nil, :query => query)
         end
 
@@ -462,8 +462,8 @@ module Aliyun
             :limit => 100,
             :truncated => true
           }
-          stub_request(:get, request_path)
-            .with(:query => query)
+          stub_request(:get, request_path)\
+            .with(:query => query)\
             .to_return(:body => mock_multiparts(return_multiparts, return_more))
 
           txns, more = @protocol.list_multipart_uploads(
@@ -474,9 +474,9 @@ module Aliyun
                   :limit => 100,
                   :encoding => KeyEncoding::URL)
 
-          expect(WebMock).to have_requested(:get, request_path)
+          expect(WebMock).to have_requested(:get, request_path)\
             .with(:body => nil, :query => query)
-          expect(txns.map {|x| x.to_s}.join(';'))
+          expect(txns.map {|x| x.to_s}.join(';'))\
             .to eq(return_multiparts.map {|x| x.to_s}.join(';'))
           expect(more).to eq(return_more)
         end
@@ -529,8 +529,8 @@ module Aliyun
             :encoding => KeyEncoding::URL
           }
 
-          stub_request(:get, request_path)
-            .with(:query => query)
+          stub_request(:get, request_path)\
+            .with(:query => query)\
             .to_return(:body => mock_multiparts(es_multiparts, es_more))
 
           txns, more = @protocol.list_multipart_uploads(
@@ -541,9 +541,9 @@ module Aliyun
                   :limit => 100,
                   :encoding => KeyEncoding::URL)
 
-          expect(WebMock).to have_requested(:get, request_path)
+          expect(WebMock).to have_requested(:get, request_path)\
             .with(:body => nil, :query => query)
-          expect(txns.map {|x| x.to_s}.join(';'))
+          expect(txns.map {|x| x.to_s}.join(';'))\
             .to eq(return_multiparts.map {|x| x.to_s}.join(';'))
           expect(more).to eq(return_more)
         end
@@ -554,15 +554,15 @@ module Aliyun
 
           code = 'InvalidArgument'
           message = 'Invalid argument.'
-          stub_request(:get, request_path)
-            .with(:query => query)
+          stub_request(:get, request_path)\
+            .with(:query => query)\
             .to_return(:status => 400, :body => mock_error(code, message))
 
           expect {
             @protocol.list_multipart_uploads(@bucket)
           }.to raise_error(ServerError, err(message))
 
-          expect(WebMock).to have_requested(:get, request_path)
+          expect(WebMock).to have_requested(:get, request_path)\
             .with(:body => nil, :query => query)
         end
       end # list multiparts
@@ -577,7 +577,7 @@ module Aliyun
 
           @protocol.list_parts(@bucket, @object, txn_id)
 
-          expect(WebMock).to have_requested(:get, request_path)
+          expect(WebMock).to have_requested(:get, request_path)\
             .with(:body => nil, :query => query)
         end
 
@@ -597,7 +597,7 @@ module Aliyun
                           :limit => 100,
                           :encoding => KeyEncoding::URL)
 
-          expect(WebMock).to have_requested(:get, request_path)
+          expect(WebMock).to have_requested(:get, request_path)\
             .with(:body => nil, :query => query)
         end
 
@@ -625,8 +625,8 @@ module Aliyun
             :truncated => true
           }
 
-          stub_request(:get, request_path)
-            .with(:query => query)
+          stub_request(:get, request_path)\
+            .with(:query => query)\
             .to_return(:body => mock_parts(return_parts, return_more))
 
           parts, more = @protocol.list_parts(@bucket, @object, txn_id,
@@ -634,7 +634,7 @@ module Aliyun
                           :limit => 100,
                           :encoding => KeyEncoding::URL)
 
-          expect(WebMock).to have_requested(:get, request_path)
+          expect(WebMock).to have_requested(:get, request_path)\
             .with(:body => nil, :query => query)
           part_numbers = return_parts.map {|x| x.number}
           expect(parts.map {|x| x.number}).to match_array(part_numbers)
@@ -648,15 +648,15 @@ module Aliyun
           code = 'InvalidArgument'
           message = 'Invalid argument.'
 
-          stub_request(:get, request_path)
-            .with(:query => query)
+          stub_request(:get, request_path)\
+            .with(:query => query)\
             .to_return(:status => 400, :body => mock_error(code, message))
 
           expect {
             @protocol.list_parts(@bucket, @object, txn_id)
           }.to raise_error(ServerError, err(message))
 
-          expect(WebMock).to have_requested(:get, request_path)
+          expect(WebMock).to have_requested(:get, request_path)\
             .with(:body => nil, :query => query)
         end
       end # list parts

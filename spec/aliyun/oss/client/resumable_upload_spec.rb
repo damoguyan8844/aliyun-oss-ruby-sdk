@@ -13,10 +13,10 @@ module Aliyun
         @endpoint = 'oss-cn-hangzhou.aliyuncs.com'
         @bucket_name = 'rubysdk-bucket'
         @object_key = 'resumable_file'
-        @bucket = Client.new(
+        @bucket = Client.new( :opts => {
           :endpoint => @endpoint,
           :access_key_id => 'xxx',
-          :access_key_secret => 'yyy').get_bucket(@bucket_name)
+          :access_key_secret => 'yyy'}).get_bucket(@bucket_name)
 
         @file = './file_to_upload'
         # write 100B data
@@ -71,7 +71,7 @@ module Aliyun
       end
 
       it "should upload file when all goes well" do
-        stub_request(:post, /#{object_url}\?uploads.*/)
+        stub_request(:post, /#{object_url}\?uploads.*/)\
           .to_return(:body => mock_txn_id('upload_id'))
         stub_request(:put, /#{object_url}\?partNumber.*/)
         stub_request(:post, /#{object_url}\?uploadId.*/)
@@ -104,86 +104,86 @@ module Aliyun
       end
 
       it "should upload file with callback" do
-        stub_request(:post, /#{object_url}\?uploads.*/)
+        stub_request(:post, /#{object_url}\?uploads.*/)\
           .to_return(:body => mock_txn_id('upload_id'))
         stub_request(:put, /#{object_url}\?partNumber.*/)
         stub_request(:post, /#{object_url}\?uploadId.*/)
 
         callback = Callback.new(
-          url: 'http://app.server.com/callback',
-          query: {'id' => 1, 'name' => '杭州'},
-          body: 'hello world',
-          host: 'server.com'
+          :url => 'http://app.server.com/callback',
+          :query => {'id' => 1, 'name' => '杭州'},
+          :body => 'hello world',
+          :host => 'server.com'
         )
         @bucket.resumable_upload(
-          @object_key, @file, part_size: 10, callback: callback)
+          @object_key, @file, :part_size => 10, :callback => callback)
 
         expect(WebMock).to have_requested(
           :post, /#{object_url}\?uploads.*/).times(1)
 
         expect(WebMock).to have_requested(
-                             :put, /#{object_url}\?partNumber.*/)
+                             :put, /#{object_url}\?partNumber.*/)\
                             .times(10)
-        expect(WebMock)
+        expect(WebMock)\
           .to have_requested(
-                :post, /#{object_url}\?uploadId.*/)
-               .with { |req| req.headers.key?('X-Oss-Callback') }
+                :post, /#{object_url}\?uploadId.*/)\
+               .with { |req| req.headers.key?('X-Oss-Callback') }\
                .times(1)
 
         expect(File.exist?("#{@file}.cpt")).to be false
       end
 
       it "should raise CallbackError when callback failed" do
-        stub_request(:post, /#{object_url}\?uploads.*/)
+        stub_request(:post, /#{object_url}\?uploads.*/)\
           .to_return(:body => mock_txn_id('upload_id'))
         stub_request(:put, /#{object_url}\?partNumber.*/)
 
         code = 'CallbackFailed'
         message = 'Error status: 502.'
-        stub_request(:post, /#{object_url}\?uploadId.*/)
+        stub_request(:post, /#{object_url}\?uploadId.*/)\
           .to_return(:status => 203, :body => mock_error(code, message))
 
         callback = Callback.new(
-          url: 'http://app.server.com/callback',
-          query: {'id' => 1, 'name' => '杭州'},
-          body: 'hello world',
-          host: 'server.com'
+          :url => 'http://app.server.com/callback',
+          :query => {'id' => 1, 'name' => '杭州'},
+          :body=> 'hello world',
+          :host => 'server.com'
         )
         expect {
           @bucket.resumable_upload(
-            @object_key, @file, part_size: 10, callback: callback)
+            @object_key, @file, :part_size => 10, :callback => callback)
         }.to raise_error(CallbackError, err(message))
 
         expect(WebMock).to have_requested(
           :post, /#{object_url}\?uploads.*/).times(1)
 
         expect(WebMock).to have_requested(
-                             :put, /#{object_url}\?partNumber.*/)
+                             :put, /#{object_url}\?partNumber.*/)\
                             .times(10)
 
-        expect(WebMock)
+        expect(WebMock)\
           .to have_requested(
-                :post, /#{object_url}\?uploadId.*/)
-               .with { |req| req.headers.key?('X-Oss-Callback') }
+                :post, /#{object_url}\?uploadId.*/)\
+               .with { |req| req.headers.key?('X-Oss-Callback') }\
                .times(1)
 
         expect(File.exist?("#{@file}.cpt")).to be true
       end
 
       it "should upload file with custom headers" do
-        stub_request(:post, /#{object_url}\?uploads.*/)
+        stub_request(:post, /#{object_url}\?uploads.*/)\
           .to_return(:body => mock_txn_id('upload_id'))
         stub_request(:put, /#{object_url}\?partNumber.*/)
         stub_request(:post, /#{object_url}\?uploadId.*/)
 
         @bucket.resumable_upload(
           @object_key, @file,
-          part_size: 10,
-          headers: {'cache-CONTROL' => 'cacheit', 'CONTENT-disposition' => 'oh;yeah'})
+          :part_size => 10,
+          :headers => {'cache-CONTROL' => 'cacheit', 'CONTENT-disposition' => 'oh;yeah'})
 
         headers = {}
         expect(WebMock).to have_requested(
-                             :post, /#{object_url}\?uploads.*/)
+                             :post, /#{object_url}\?uploads.*/)\
                            .with { |req| headers = req.headers }.times(1)
 
         expect(headers['Cache-Control']).to eq('cacheit')
@@ -195,8 +195,8 @@ module Aliyun
         code = 'Timeout'
         message = 'Request timeout.'
 
-        stub_request(:post, /#{object_url}\?uploads.*/)
-          .to_return(:status => 500, :body => mock_error(code, message)).then
+        stub_request(:post, /#{object_url}\?uploads.*/)\
+          .to_return(:status => 500, :body => mock_error(code, message)).then\
           .to_return(:body => mock_txn_id('upload_id'))
         stub_request(:put, /#{object_url}\?partNumber.*/)
         stub_request(:post, /#{object_url}\?uploadId.*/)
@@ -222,7 +222,7 @@ module Aliyun
 
       it "should resume when upload part fails" do
         # begin multipart
-        stub_request(:post, /#{object_url}\?uploads.*/)
+        stub_request(:post, /#{object_url}\?uploads.*/)\
           .to_return(:body => mock_txn_id('upload_id'))
 
         # commit multipart
@@ -231,18 +231,18 @@ module Aliyun
         code = 'Timeout'
         message = 'Request timeout.'
         # upload part
-        stub_request(:put, /#{object_url}\?partNumber.*/)
-          .to_return(:status => 200).times(3).then
-          .to_return(:status => 500, :body => mock_error(code, message)).times(2).then
-          .to_return(:status => 200).times(6).then
-          .to_return(:status => 500, :body => mock_error(code, message)).then
+        stub_request(:put, /#{object_url}\?partNumber.*/)\
+          .to_return(:status => 200).times(3).then\
+          .to_return(:status => 500, :body => mock_error(code, message)).times(2).then\
+          .to_return(:status => 200).times(6).then\
+          .to_return(:status => 500, :body => mock_error(code, message)).then\
           .to_return(:status => 200)
 
         success = false
         4.times do
           begin
             @bucket.resumable_upload(
-              @object_key, @file, part_size: 10, threads: 1)
+              @object_key, @file, :part_size => 10, :threads => 1)
             success = true
           rescue
             # pass
@@ -291,7 +291,7 @@ module Aliyun
           end
         end
 
-        stub_request(:post, /#{object_url}\?uploads.*/)
+        stub_request(:post, /#{object_url}\?uploads.*/)\
           .to_return(:body => mock_txn_id('upload_id'))
         stub_request(:put, /#{object_url}\?partNumber.*/)
         stub_request(:post, /#{object_url}\?uploadId.*/)
@@ -300,7 +300,7 @@ module Aliyun
         4.times do
           begin
             @bucket.resumable_upload(
-              @object_key, @file, part_size: 10, threads: 1)
+              @object_key, @file, :part_size => 10, :threads => 1)
             success = true
           rescue
             # pass
@@ -329,7 +329,7 @@ module Aliyun
 
       it "should resume when commit txn fails" do
         # begin multipart
-        stub_request(:post, /#{object_url}\?uploads.*/)
+        stub_request(:post, /#{object_url}\?uploads.*/)\
           .to_return(:body => mock_txn_id('upload_id'))
 
         # upload part
@@ -338,15 +338,15 @@ module Aliyun
         code = 'Timeout'
         message = 'Request timeout.'
         # commit multipart
-        stub_request(:post, /#{object_url}\?uploadId.*/)
-          .to_return(:status => 500, :body => mock_error(code, message)).times(2).then
+        stub_request(:post, /#{object_url}\?uploadId.*/)\
+          .to_return(:status => 500, :body => mock_error(code, message)).times(2).then\
           .to_return(:status => 200)
 
         success = false
         3.times do
           begin
             @bucket.resumable_upload(
-              @object_key, @file, part_size: 10, threads: 1)
+              @object_key, @file, :part_size => 10, :threads => 1)
             success = true
           rescue
             # pass
@@ -367,7 +367,7 @@ module Aliyun
 
       it "should not write checkpoint when specify disable_cpt" do
         # begin multipart
-        stub_request(:post, /#{object_url}\?uploads.*/)
+        stub_request(:post, /#{object_url}\?uploads.*/)\
           .to_return(:body => mock_txn_id('upload_id'))
 
         # upload part
@@ -376,8 +376,8 @@ module Aliyun
         code = 'Timeout'
         message = 'Request timeout.'
         # commit multipart
-        stub_request(:post, /#{object_url}\?uploadId.*/)
-          .to_return(:status => 500, :body => mock_error(code, message)).times(2).then
+        stub_request(:post, /#{object_url}\?uploadId.*/)\
+          .to_return(:status => 500, :body => mock_error(code, message)).times(2).then\
           .to_return(:status => 200)
 
         cpt_file = "#{File.expand_path(@file)}.cpt"

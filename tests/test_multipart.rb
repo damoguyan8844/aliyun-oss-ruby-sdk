@@ -35,13 +35,13 @@ class TestMultipart < Minitest::Test
       ids << id
     }
 
-    all = @bucket.list_uploads(limit: 1).to_a
+    all = @bucket.list_uploads(:limit => 1).to_a
     assert_equal ids, all.map(&:id)
 
-    after_1 = @bucket.list_uploads(key_marker: get_key("obj-0")).to_a
+    after_1 = @bucket.list_uploads(:key_marker => get_key("obj-0")).to_a
     assert_equal ids[1, 5], after_1.map(&:id)
 
-    after_5 = @bucket.list_uploads(key_marker: get_key("obj-4")).to_a
+    after_5 = @bucket.list_uploads(:key_marker => get_key("obj-4")).to_a
     assert after_5.empty?, after_5.to_s
   end
 
@@ -60,11 +60,11 @@ class TestMultipart < Minitest::Test
     assert_equal ids, all.map(&:id)
 
     # id_marker is ignored
-    after_1 = @bucket.list_uploads(id_marker: ids[0]).to_a
+    after_1 = @bucket.list_uploads(:id_marker => ids[0]).to_a
     assert_equal ids, after_1.map(&:id)
 
     # id_marker is ignored
-    after_5 = @bucket.list_uploads(id_marker: ids[4]).to_a
+    after_5 = @bucket.list_uploads(:id_marker => ids[4]).to_a
     assert_equal ids, after_5.map(&:id)
   end
 
@@ -87,11 +87,11 @@ class TestMultipart < Minitest::Test
     bar_ids.sort!
 
     after_1 = @bucket.list_uploads(
-      id_marker: bar_ids[0], key_marker: get_key("bar"), limit: 1).to_a
+      :id_marker => bar_ids[0], :key_marker => get_key("bar"), :limit => 1).to_a
     assert_equal bar_ids[1, 5] + foo_ids, after_1.map(&:id)
 
     after_5 = @bucket.list_uploads(
-      id_marker: bar_ids[4], key_marker: get_key("bar")).to_a
+      :id_marker => bar_ids[4], :key_marker => get_key("bar")).to_a
     assert_equal foo_ids, after_5.map(&:id)
   end
 end

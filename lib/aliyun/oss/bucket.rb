@@ -166,7 +166,7 @@ module Aliyun
       #  end
       def list_objects(opts = {})
         Iterator::Objects.new(
-          @protocol, name, opts.merge(encoding: KeyEncoding::URL)).to_enum
+          @protocol, name, opts.merge(:encoding => KeyEncoding::URL)).to_enum
       end
 
       # 向Bucket中上传一个object
@@ -391,7 +391,7 @@ module Aliyun
       #  了:quiet参数，则返回[]
       def batch_delete_objects(keys, opts = {})
         @protocol.batch_delete_objects(
-          name, keys, opts.merge(encoding: KeyEncoding::URL))
+          name, keys, opts.merge(:encoding => KeyEncoding::URL))
       end
 
       # 设置object的ACL
@@ -476,12 +476,11 @@ module Aliyun
         args[:content_type] ||= get_content_type(key)
         cpt_file = args[:cpt_file] || get_cpt_file(file)
 
-        Multipart::Upload.new(
-          @protocol, options: args,
-          progress: block,
-          object: key, bucket: name, creation_time: Time.now,
-          file: File.expand_path(file), cpt_file: cpt_file
-        ).run
+
+        Aliyun::OSS::Multipart::Upload.new(@protocol, :options => args,
+           :progress => block,
+           :object => key, :bucket => name, :creation_time => Time.now,
+           :file => File.expand_path(file), :cpt_file => cpt_file).run
       end
 
       # 下载bucket中的一个object到本地文件，支持断点续传。指定的object
@@ -532,12 +531,15 @@ module Aliyun
         args[:content_type] ||= get_content_type(key)
         cpt_file = args[:cpt_file] || get_cpt_file(file)
 
-        Multipart::Download.new(
-          @protocol, options: args,
-          progress: block,
-          object: key, bucket: name, creation_time: Time.now,
-          file: File.expand_path(file), cpt_file: cpt_file
-        ).run
+        opts = {:options => args,
+        :progress => block,
+        :object => key, :bucket => name, :creation_time => Time.now,
+        :file => File.expand_path(file), :cpt_file => cpt_file}
+
+        Aliyun::OSS::Multipart::Upload.new(@protocol, :options => args,
+             :progress => block,
+             :object => key, :bucket => name, :creation_time => Time.now,
+             :file => File.expand_path(file), :cpt_file => cpt_file).run
       end
 
       # 列出此Bucket中正在进行的multipart上传请求，不包括已经完成或者
@@ -565,7 +567,7 @@ module Aliyun
       #   # return <1, 6>, <1, 7>, <2, 0>, <3, 0> ...
       def list_uploads(opts = {})
         Iterator::Uploads.new(
-          @protocol, name, opts.merge(encoding: KeyEncoding::URL)).to_enum
+          @protocol, name, opts.merge(:encoding => KeyEncoding::URL)).to_enum
       end
 
       # 取消一个multipart上传请求，一般用于清除Bucket下因断点上传而产

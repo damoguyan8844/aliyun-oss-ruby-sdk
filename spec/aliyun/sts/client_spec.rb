@@ -52,21 +52,22 @@ module Aliyun
 
       before :all do
         @url = 'https://sts.aliyuncs.com'
-        @client = Client.new(access_key_id: 'xxx', access_key_secret: 'yyy')
+        opts = {:access_key_id => 'xxx', :access_key_secret => 'yyy' }
+        @client = Aliyun::STS::Client.new(opts)
       end
 
       context "assume role" do
         it "should assume role" do
           expiration = Time.parse(Time.now.utc.iso8601)
 
-          stub_request(:post, @url)
+          stub_request(:post, @url)\
             .to_return(:body => mock_sts(
                          'sts_id', 'sts_key', 'sts_token', expiration))
 
           token = @client.assume_role('role-1', 'app-1')
 
           rbody = nil
-          expect(WebMock).to have_requested(:post, @url)
+          expect(WebMock).to have_requested(:post, @url)\
                               .with { |req| rbody = req.body }
           params = rbody.split('&').reduce({}) { |h, i|
             v = i.split('=')
@@ -93,7 +94,7 @@ module Aliyun
           code = "InvalidParameter"
           message = "Bla bla bla."
 
-          stub_request(:post, @url)
+          stub_request(:post, @url)\
             .to_return(:status => 400,
                        :body => mock_error(code, message))
 
@@ -107,7 +108,7 @@ module Aliyun
         it "should set policy and duration" do
           expiration = Time.parse(Time.now.utc.iso8601)
 
-          stub_request(:post, @url)
+          stub_request(:post, @url)\
             .to_return(:body => mock_sts(
                          'sts_id', 'sts_key', 'sts_token', expiration))
 
@@ -119,7 +120,7 @@ module Aliyun
           token = @client.assume_role('role-1', 'app-1', policy, duration)
 
           rbody = nil
-          expect(WebMock).to have_requested(:post, @url)
+          expect(WebMock).to have_requested(:post, @url)\
                               .with { |req| rbody = req.body }
           params = rbody.split('&').reduce({}) { |h, i|
             v = i.split('=')

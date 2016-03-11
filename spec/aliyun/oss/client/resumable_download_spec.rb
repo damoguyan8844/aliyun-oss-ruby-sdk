@@ -59,7 +59,7 @@ module Aliyun
         stub_request(:head, object_url).to_return(:headers => return_headers)
 
         # get object by range
-        stub_request(:get, object_url)
+        stub_request(:get, object_url)\
           .to_return((1..10).map{ |i| {:body => mock_object(i)} })
 
         prg = []
@@ -75,7 +75,7 @@ module Aliyun
         expect(File.exist?("#{@file}.cpt")).to be false
         expect(Dir.glob("#{@file}.part.*").empty?).to be true
 
-        expect(File.read(@file).lines)
+        expect(File.read(@file).lines)\
           .to match_array((1..10).map{ |i| mock_object(i) })
         expect(prg.size).to eq(10)
       end
@@ -94,11 +94,11 @@ module Aliyun
         code = 'Timeout'
         message = 'Request timeout.'
         # upload part
-        stub_request(:get, object_url)
-          .to_return((1..3).map{ |i| {:body => mock_object(i)} }).then
-          .to_return(:status => 500, :body => mock_error(code, message)).times(2).then
-          .to_return((4..9).map{ |i| {:body => mock_object(i)} }).then
-          .to_return(:status => 500, :body => mock_error(code, message)).then
+        stub_request(:get, object_url)\
+          .to_return((1..3).map{ |i| {:body => mock_object(i)} }).then\
+          .to_return(:status => 500, :body => mock_error(code, message)).times(2).then\
+          .to_return((4..9).map{ |i| {:body => mock_object(i)} }).then\
+          .to_return(:status => 500, :body => mock_error(code, message)).then\
           .to_return((10..10).map{ |i| {:body => mock_object(i)} })
 
         success = false
@@ -154,7 +154,7 @@ module Aliyun
 
         # get object by range
         returns = [1, 1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        stub_request(:get, object_url)
+        stub_request(:get, object_url)\
           .to_return(returns.map{ |i| {:body => mock_object(i)} })
 
         success = false
@@ -187,11 +187,11 @@ module Aliyun
         code = 'Timeout'
         message = 'Request timeout.'
         # upload part
-        stub_request(:get, object_url)
-          .to_return((1..3).map{ |i| {:body => mock_object(i)} }).then
-          .to_return(:status => 500, :body => mock_error(code, message)).times(2).then
-          .to_return((1..9).map{ |i| {:body => mock_object(i)} }).then
-          .to_return(:status => 500, :body => mock_error(code, message)).then
+        stub_request(:get, object_url)\
+          .to_return((1..3).map{ |i| {:body => mock_object(i)} }).then\
+          .to_return(:status => 500, :body => mock_error(code, message)).times(2).then\
+          .to_return((1..9).map{ |i| {:body => mock_object(i)} }).then\
+          .to_return(:status => 500, :body => mock_error(code, message)).then\
           .to_return((1..10).map{ |i| {:body => mock_object(i)} })
 
         cpt_file = "#{File.expand_path(@file)}.cpt"

@@ -87,7 +87,7 @@ demo "List first 10 objects/common prefixes" do
   objects = bucket.list_objects(:prefix => 'foo/', :delimiter => '/')
 
   objects.take(10).each do |o|
-    if o.is_a?(Aliyun::OSS::Object)
+    if o.is_a?(Aliyun::OSS::AliObject)
       puts "Object: #{o.key}, type: #{o.type}, size: #{o.size}"
     else
       puts "Common prefix: #{o}"

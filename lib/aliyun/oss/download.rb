@@ -180,10 +180,10 @@ module Aliyun
           File.open(part_file, 'w') do |w|
             @protocol.get_object(
               bucket, object,
-              @options.merge(range: p[:range])) { |chunk| w.write(chunk) }
+              @options.merge(:range => p[:range])) { |chunk| w.write(chunk) }
           end
 
-          sync_update_part(p.merge(done: true, md5: get_file_md5(part_file)))
+          sync_update_part(p.merge( :done => true, :md5 => get_file_md5(part_file)))
 
           checkpoint
 

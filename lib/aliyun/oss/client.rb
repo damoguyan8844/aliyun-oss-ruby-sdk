@@ -44,7 +44,7 @@ module Aliyun
         fail ClientError, "Endpoint must be provided" unless opts[:endpoint]
 
         @config = Config.new(opts)
-        @protocol = Protocol.new(@config)
+        @protocol = Aliyun::OSS::Protocol.new(@config)
       end
 
       # 列出当前所有的bucket

@@ -34,13 +34,13 @@ end
 
 demo "put object with callback" do
   callback = Aliyun::OSS::Callback.new(
-    url: 'http://10.101.168.94:1234/callback',
-    query: {user: 'put_object'},
-    body: 'bucket=${bucket}&object=${object}'
+    :url => 'http://10.101.168.94:1234/callback',
+    :query => { :user => 'put_object'},
+    :body => 'bucket=${bucket}&object=${object}'
   )
 
   begin
-    bucket.put_object('files/hello', callback: callback)
+    bucket.put_object('files/hello', :callback => callback)
   rescue Aliyun::OSS::CallbackError => e
     puts "Callback failed: #{e.message}"
   end
@@ -48,13 +48,13 @@ end
 
 demo "resumable upload with callback" do
   callback = Aliyun::OSS::Callback.new(
-    url: 'http://10.101.168.94:1234/callback',
-    query: {user: 'resumable_upload'},
-    body: 'bucket=${bucket}&object=${object}'
+    :url => 'http://10.101.168.94:1234/callback',
+    :query => {:user => 'resumable_upload'},
+    :body => 'bucket=${bucket}&object=${object}'
   )
 
   begin
-    bucket.resumable_upload('files/world', '/tmp/x', callback: callback)
+    bucket.resumable_upload('files/world', '/tmp/x', :callback => callback)
   rescue Aliyun::OSS::CallbackError => e
     puts "Callback failed: #{e.message}"
   end

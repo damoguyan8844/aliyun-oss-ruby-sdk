@@ -18,7 +18,7 @@ module Aliyun
 
       def initialize(opts)
         @config = Config.new(opts)
-        @protocol = Protocol.new(@config)
+        @protocol = Aliyun::STS::Protocol.new(@config)
       end
 
       # Assume a role

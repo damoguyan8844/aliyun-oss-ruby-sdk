@@ -123,13 +123,13 @@ module Aliyun
           query = {'acl' => ''}
           return_acl = ACL::PUBLIC_READ
 
-          stub_request(:get, bucket_url)
-            .with(:query => query)
+          stub_request(:get, bucket_url)\
+            .with(:query => query)\
             .to_return(:body => mock_acl(return_acl))
 
           acl = @bucket.acl
 
-          expect(WebMock).to have_requested(:get, bucket_url)
+          expect(WebMock).to have_requested(:get, bucket_url)\
             .with(:query => query, :body => nil)
           expect(acl).to eq(return_acl)
         end
@@ -141,7 +141,7 @@ module Aliyun
 
           @bucket.acl = ACL::PUBLIC_READ
 
-          expect(WebMock).to have_requested(:put, bucket_url)
+          expect(WebMock).to have_requested(:put, bucket_url)\
             .with(:query => query, :body => nil)
         end
 
@@ -152,12 +152,12 @@ module Aliyun
 
           @bucket.logging = BucketLogging.new(:enable => false)
 
-          expect(WebMock).to have_requested(:delete, bucket_url)
+          expect(WebMock).to have_requested(:delete, bucket_url)\
             .with(:query => query, :body => nil)
         end
 
         it "should get bucket url" do
-          expect(@bucket.bucket_url)
+          expect(@bucket.bucket_url)\
             .to eq('http://rubysdk-bucket.oss-cn-hangzhou.aliyuncs.com/')
         end
 
@@ -173,7 +173,7 @@ module Aliyun
             :delimiter => '-',
             'encoding-type' => 'url'
           }
-          return_obj_1 = (1..5).map{ |i| Object.new(
+          return_obj_1 = (1..5).map{ |i| AliObject.new(
             :key => "obj-#{i}",
             :size => 1024 * i,
             :etag => "etag-#{i}")}
@@ -189,7 +189,7 @@ module Aliyun
             :marker => 'foo',
             'encoding-type' => 'url'
           }
-          return_obj_2 = (6..8).map{ |i| Object.new(
+          return_obj_2 = (6..8).map{ |i| AliObject.new(
             :key => "obj-#{i}",
             :size => 1024 * i,
             :etag => "etag-#{i}")}
@@ -199,25 +199,25 @@ module Aliyun
             :common_prefixes => ['rock', 'suck']
           }
 
-          stub_request(:get, bucket_url)
-            .with(:query => query_1)
+          stub_request(:get, bucket_url)\
+            .with(:query => query_1)\
             .to_return(:body => mock_objects(return_obj_1, return_more_1))
 
-          stub_request(:get, bucket_url)
-            .with(:query => query_2)
+          stub_request(:get, bucket_url)\
+            .with(:query => query_2)\
             .to_return(:body => mock_objects(return_obj_2, return_more_2))
 
           list = @bucket.list_objects :prefix => 'list-', :delimiter => '-'
           all = list.to_a
 
-          expect(WebMock).to have_requested(:get, bucket_url)
+          expect(WebMock).to have_requested(:get, bucket_url)\
                          .with(:query => query_1).times(1)
-          expect(WebMock).to have_requested(:get, bucket_url)
+          expect(WebMock).to have_requested(:get, bucket_url)\
                          .with(:query => query_2).times(1)
 
-          objs = all.select{ |x| x.is_a?(Object) }
+          objs = all.select{ |x| x.is_a?(AliObject) }
           common_prefixes = all.select{ |x| x.is_a?(String) }
-          all_objs = (1..8).map{ |i| Object.new(
+          all_objs = (1..8).map{ |i| AliObject.new(
             :key => "obj-#{i}",
             :size => 1024 * i,
             :etag => "etag-#{i}")}
@@ -235,7 +235,7 @@ module Aliyun
 
           @bucket.put_object(key, :file => '/tmp/x')
 
-          expect(WebMock).to have_requested(:put, object_url(key))
+          expect(WebMock).to have_requested(:put, object_url(key))\
             .with(:body => content, :query => {})
         end
 
@@ -245,8 +245,8 @@ module Aliyun
 
           @bucket.put_object(key, :acl => ACL::PUBLIC_READ)
 
-          expect(WebMock)
-            .to have_requested(:put, object_url(key))
+          expect(WebMock)\
+            .to have_requested(:put, object_url(key))\
                  .with(:headers => {'X-Oss-Object-Acl' => ACL::PUBLIC_READ})
         end
 
@@ -255,14 +255,14 @@ module Aliyun
           stub_request(:put, object_url(key))
 
           callback = Callback.new(
-            url: 'http://app.server.com/callback',
-            query: {'id' => 1, 'name' => '杭州'},
-            body: 'hello world',
-            host: 'server.com'
+            :url => 'http://app.server.com/callback',
+            :query => {'id' => 1, 'name' => '杭州'},
+            :body => 'hello world',
+            :host => 'server.com'
           )
-          @bucket.put_object(key, callback: callback)
+          @bucket.put_object(key, :callback => callback)
 
-          expect(WebMock).to have_requested(:put, object_url(key))
+          expect(WebMock).to have_requested(:put, object_url(key))\
             .with { |req| req.headers.key?('X-Oss-Callback') }
         end
 
@@ -270,20 +270,20 @@ module Aliyun
           key = 'ruby'
           code = 'CallbackFailed'
           message = 'Error status: 502.'
-          stub_request(:put, object_url(key))
+          stub_request(:put, object_url(key))\
             .to_return(:status => 203, :body => mock_error(code, message))
 
           callback = Callback.new(
-            url: 'http://app.server.com/callback',
-            query: {'id' => 1, 'name' => '杭州'},
-            body: 'hello world',
-            host: 'server.com'
+            :url => 'http://app.server.com/callback',
+            :query => {'id' => 1, 'name' => '杭州'},
+            :body => 'hello world',
+            :host => 'server.com'
           )
           expect {
-            @bucket.put_object(key, callback: callback)
+            @bucket.put_object(key, :callback => callback)
           }.to raise_error(CallbackError, err(message))
 
-          expect(WebMock).to have_requested(:put, object_url(key))
+          expect(WebMock).to have_requested(:put, object_url(key))\
             .with { |req| req.headers.key?('X-Oss-Callback') }
         end
 
@@ -292,10 +292,10 @@ module Aliyun
           stub_request(:put, object_url(key))
 
           @bucket.put_object(
-            key, headers: {'cache-control' => 'xxx', 'expires' => 'yyy'})
+            key, :headers => {'cache-control' => 'xxx', 'expires' => 'yyy'})
 
           headers = {}
-          expect(WebMock).to have_requested(:put, object_url(key))
+          expect(WebMock).to have_requested(:put, object_url(key))\
                               .with { |req| headers = req.headers }
           expect(headers['Cache-Control']).to eq('xxx')
           expect(headers['Expires']).to eq('yyy')
@@ -308,11 +308,11 @@ module Aliyun
 
           @bucket.append_object(
             key, 11,
-            headers: {'CACHE-CONTROL' => 'nocache', 'EXPIRES' => 'seripxe'})
+            :headers => {'CACHE-CONTROL' => 'nocache', 'EXPIRES' => 'seripxe'})
 
           headers = {}
-          expect(WebMock).to have_requested(:post, object_url(key))
-                              .with(:query => query)
+          expect(WebMock).to have_requested(:post, object_url(key))\
+                              .with(:query => query)\
                               .with { |req| headers = req.headers }
           expect(headers['Cache-Control']).to eq('nocache')
           expect(headers['Expires']).to eq('seripxe')
@@ -327,7 +327,7 @@ module Aliyun
 
           @bucket.get_object(key, :file => '/tmp/x')
 
-          expect(WebMock).to have_requested(:get, object_url(key))
+          expect(WebMock).to have_requested(:get, object_url(key))\
                          .with(:body => nil, :query => {})
           expect(File.read('/tmp/x')).to eq(content)
         end
@@ -344,12 +344,12 @@ module Aliyun
             'x-oss-meta-year' => '2015',
             'x-oss-meta-people' => 'mary'
           }
-          stub_request(:head, object_url(key))
+          stub_request(:head, object_url(key))\
             .to_return(:headers => return_headers)
 
           obj = @bucket.get_object(key)
 
-          expect(WebMock).to have_requested(:head, object_url(key))
+          expect(WebMock).to have_requested(:head, object_url(key))\
             .with(:body => nil, :query => {})
 
           expect(obj.key).to eq(key)
@@ -371,7 +371,7 @@ module Aliyun
 
           @bucket.append_object(key, 11, :file => '/tmp/x.html')
 
-          expect(WebMock).to have_requested(:post, object_url(key))
+          expect(WebMock).to have_requested(:post, object_url(key))\
                          .with(:query => query, :body => content,
                                :headers => {'Content-Type' => 'text/html'})
         end
@@ -383,16 +383,16 @@ module Aliyun
 
           @bucket.append_object(key, 11, :acl => ACL::PUBLIC_READ_WRITE)
 
-          expect(WebMock)
-            .to have_requested(:post, object_url(key))
-                 .with(:query => query,
+          expect(WebMock)\
+            .to have_requested(:post, object_url(key))\
+                 .with(:query => query,\
                        :headers => {'X-Oss-Object-Acl' => ACL::PUBLIC_READ_WRITE})
         end
 
         it "should answer object exists?" do
           key = 'ruby'
 
-          stub_request(:head, object_url(key))
+          stub_request(:head, object_url(key))\
             .to_return(:status => 404).times(3)
 
           expect {
@@ -412,13 +412,13 @@ module Aliyun
             'x-oss-meta-people' => 'mary'
           }
 
-          stub_request(:head, object_url(key))
+          stub_request(:head, object_url(key))\
             .to_return(:headers => return_headers).times(2)
 
           expect(@bucket.object_exists?(key)).to be true
           expect(@bucket.object_exist?(key)).to be true
 
-          stub_request(:head, object_url(key))
+          stub_request(:head, object_url(key))\
             .to_return(:status => 500)
 
           expect {
@@ -434,7 +434,7 @@ module Aliyun
           @bucket.update_object_metas(
             key, {'people' => 'mary', 'year' => '2016'})
 
-          expect(WebMock).to have_requested(:put, object_url(key))
+          expect(WebMock).to have_requested(:put, object_url(key))\
                          .with(:body => nil,
                                :headers => {
                                  'x-oss-copy-source' => resource_path(key),
@@ -453,7 +453,7 @@ module Aliyun
           expect(path).to eq(object_url)
 
           query = {}
-          url[url.index('?') + 1, url.size].split('&')
+          url[url.index('?') + 1, url.size].split('&')\
             .each { |s| k, v = s.split('='); query[k] = v }
 
           expect(query.key?('Expires')).to be true
@@ -501,19 +501,19 @@ module Aliyun
             :truncated => false,
           }
 
-          stub_request(:get, bucket_url)
-            .with(:query => query_1)
+          stub_request(:get, bucket_url)\
+            .with(:query => query_1)\
             .to_return(:body => mock_uploads(return_up_1, return_more_1))
 
-          stub_request(:get, bucket_url)
-            .with(:query => query_2)
+          stub_request(:get, bucket_url)\
+            .with(:query => query_2)\
             .to_return(:body => mock_uploads(return_up_2, return_more_2))
 
-          txns = @bucket.list_uploads(prefix: 'list-').to_a
+          txns = @bucket.list_uploads(:prefix => 'list-').to_a
 
-          expect(WebMock).to have_requested(:get, bucket_url)
+          expect(WebMock).to have_requested(:get, bucket_url)\
                          .with(:query => query_1).times(1)
-          expect(WebMock).to have_requested(:get, bucket_url)
+          expect(WebMock).to have_requested(:get, bucket_url)\
                          .with(:query => query_2).times(1)
 
           all_txns = (1..8).map{ |i| Multipart::Transaction.new(

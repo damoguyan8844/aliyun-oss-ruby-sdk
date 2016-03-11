@@ -29,18 +29,18 @@ module Aliyun
           bucket = 'rubysdk-bucket'
           object = 'rubysdk-object'
           client = Client.new(
-            access_key_id: 'xxx',
-            access_key_secret: 'yyy',
-            endpoint: endpoint,
-            cname: true)
+            :access_key_id => 'xxx',
+            :access_key_secret => 'yyy',
+            :endpoint => endpoint,
+            :cname => true)
 
           # TODO: ignore queries here
           # bucket operations
-          stub_request(:get, endpoint)
+          stub_request(:get, endpoint)\
             .with(:query => {'encoding-type' => 'url'})
           client.get_bucket(bucket).list_objects.take(1)
-          expect(WebMock)
-            .to have_requested(:get, endpoint)
+          expect(WebMock)\
+            .to have_requested(:get, endpoint)\
                  .with(:query => {'encoding-type' => 'url'})
 
           # object operations
@@ -54,17 +54,17 @@ module Aliyun
           bucket = 'rubysdk-bucket'
           object = 'rubysdk-object'
           client = Client.new(
-            access_key_id: 'xxx',
-            access_key_secret: 'yyy',
-            endpoint: endpoint)
+            :access_key_id => 'xxx',
+            :access_key_secret => 'yyy',
+            :endpoint => endpoint)
 
           # TODO: ignore queries here
           # bucket operations
-          stub_request(:get, "#{endpoint}/#{bucket}/")
+          stub_request(:get, "#{endpoint}/#{bucket}/")\
             .with(:query => {'encoding-type' => 'url'})
           client.get_bucket(bucket).list_objects.take(1)
-          expect(WebMock)
-            .to have_requested(:get, "#{endpoint}/#{bucket}/")
+          expect(WebMock)\
+            .to have_requested(:get, "#{endpoint}/#{bucket}/")\
                  .with(:query => {'encoding-type' => 'url'})
 
           # object operations
@@ -83,8 +83,8 @@ module Aliyun
 
           client.get_bucket(bucket).get_object(object) {}
 
-          expect(WebMock)
-            .to have_requested(:get, "#{bucket}.#{endpoint}/#{object}")
+          expect(WebMock)\
+            .to have_requested(:get, "#{bucket}.#{endpoint}/#{object}")\
             .with{ |req| not req.headers.has_key?('Authorization') }
         end
 
@@ -101,8 +101,8 @@ module Aliyun
 
           client.get_bucket(bucket).get_object(object) {}
 
-          expect(WebMock)
-            .to have_requested(:get, "#{bucket}.#{endpoint}/#{object}")
+          expect(WebMock)\
+            .to have_requested(:get, "#{bucket}.#{endpoint}/#{object}")\
             .with{ |req| req.headers.key?('X-Oss-Security-Token') }
         end
 
@@ -201,7 +201,7 @@ module Aliyun
 
           @client.create_bucket(@bucket, :location => 'oss-cn-hangzhou')
 
-          expect(WebMock).to have_requested(:put, bucket_url)
+          expect(WebMock).to have_requested(:put, bucket_url)\
             .with(:body => mock_location(location), :query => {})
         end
 
@@ -210,7 +210,7 @@ module Aliyun
 
           @client.delete_bucket(@bucket)
 
-          expect(WebMock).to have_requested(:delete, bucket_url)
+          expect(WebMock).to have_requested(:delete, bucket_url)\
             .with(:body => nil, :query => {})
         end
 
@@ -235,13 +235,13 @@ module Aliyun
 
           more_2 = {:truncated => false}
 
-          stub_request(:get, /#{@endpoint}.*/)
-            .to_return(:body => mock_buckets(return_buckets_1, more_1)).then
+          stub_request(:get, /#{@endpoint}.*/)\
+            .to_return(:body => mock_buckets(return_buckets_1, more_1)).then\
             .to_return(:body => mock_buckets(return_buckets_2, more_2))
 
           buckets = @client.list_buckets
 
-          expect(buckets.map {|b| b.to_s}.join(";"))
+          expect(buckets.map {|b| b.to_s}.join(";"))\
             .to eq((return_buckets_1 + return_buckets_2).map {|b| b.to_s}.join(";"))
           expect(WebMock).to have_requested(:get, /#{@endpoint}.*/).times(2)
         end
@@ -249,9 +249,9 @@ module Aliyun
         it "should test bucket existence" do
           query = {'acl' => ''}
           return_acl = ACL::PUBLIC_READ
-          stub_request(:get, bucket_url)
-            .with(:query => query)
-            .to_return(:body => mock_acl(return_acl)).then
+          stub_request(:get, bucket_url)\
+            .with(:query => query)\
+            .to_return(:body => mock_acl(return_acl)).then\
             .to_return(:status => 404)
 
           exist = @client.bucket_exists?(@bucket)
@@ -260,7 +260,7 @@ module Aliyun
           exist = @client.bucket_exists?(@bucket)
           expect(exist).to be false
 
-          expect(WebMock).to have_requested(:get, bucket_url)
+          expect(WebMock).to have_requested(:get, bucket_url)\
             .with(:query => query, :body => nil).times(2)
         end
 

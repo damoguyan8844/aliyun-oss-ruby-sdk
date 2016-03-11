@@ -21,14 +21,14 @@ class TestCustomHeaders < Minitest::Test
   def test_custom_headers
     key = get_key('ruby')
     cache_control = 'max-age: 3600'
-    @bucket.put_object(key, headers: {'cache-control' => cache_control})
+    @bucket.put_object(key, :headers => {'cache-control' => cache_control})
     obj = @bucket.get_object(key)
     assert_equal cache_control, obj.headers[:cache_control]
 
     content_disposition = 'attachment; filename="fname.ext"'
     @bucket.put_object(
       key,
-      headers: {'cache-control' => cache_control,
+      :headers => {'cache-control' => cache_control,
                 'CONTENT-DISPOSITION' => content_disposition})
     obj = @bucket.get_object(key)
     assert_equal cache_control, obj.headers[:cache_control]
@@ -38,7 +38,7 @@ class TestCustomHeaders < Minitest::Test
     expires = (Time.now + 3600).httpdate
     @bucket.put_object(
       key,
-      headers: {'cache-control' => cache_control,
+      :headers => {'cache-control' => cache_control,
                 'CONTENT-DISPOSITION' => content_disposition,
                 'content-ENCODING' => content_encoding,
                 'EXPIRES' => expires }) do |s|
@@ -58,9 +58,9 @@ class TestCustomHeaders < Minitest::Test
     key = get_key('rails')
     @bucket.put_object(
       key,
-      content_type: 'text/html',
-      metas: {'hello' => 'world'},
-      headers: {'content-type' => 'application/json',
+      :content_type => 'text/html',
+      :metas => {'hello' => 'world'},
+      :headers => {'content-type' => 'application/json',
                 'x-oss-meta-hello' => 'bar'}) { |s| s << 'hello world' }
     obj = @bucket.get_object(key)
 

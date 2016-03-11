@@ -114,7 +114,7 @@ module Aliyun
           logger.info("Begin commit transaction, id: #{id}")
 
           parts = sync_get_all_parts.map{ |p|
-            Part.new(:number  => p[:number], :etag => p[:etag])
+            Aliyun::OSS::Part.new(:number => p[:number], :etag => p[:etag])
           }
           @protocol.complete_multipart_upload(
             bucket, object, id, parts, @options[:callback])
@@ -177,7 +177,7 @@ module Aliyun
             end
           end
 
-          sync_update_part(p.merge(done: true, etag: result.etag))
+          sync_update_part(p.merge(:done => true, :etag => result.etag))
 
           checkpoint
 

@@ -31,7 +31,7 @@ module Aliyun
 
           @mutex.synchronize {
             File.open(file, 'w') {
-              |f| f.write(states.merge(md5: md5).to_json)
+              |f| f.write(states.merge( :md5 => md5).to_json)
             }
           }
         end

@@ -77,8 +77,8 @@ module Aliyun
 
         update_if_exists(
           more, {
-            :limit => ->(x) { x.to_i },
-            :truncated => ->(x) { x.to_bool }
+            :limit => lambda { |x| x.to_i },
+            :truncated => lambda { |x| x.to_bool }
           }
         )
 
@@ -343,7 +343,7 @@ module Aliyun
                 xml.Expiration {
                   if r.expiry.is_a?(Date)
                     xml.Date Time.utc(
-                               r.expiry.year, r.expiry.month, r.expiry.day)
+                               r.expiry.year, r.expiry.month, r.expiry.day)\
                               .iso8601.sub('Z', '.000Z')
                   elsif r.expiry.is_a?(Fixnum)
                     xml.Days r.expiry
@@ -525,7 +525,7 @@ module Aliyun
 
         headers = {'content-type' => opts[:content_type]}
         headers['x-oss-object-acl'] = opts[:acl] if opts.key?(:acl)
-        to_lower_case(opts[:metas] || {})
+        to_lower_case(opts[:metas] || {})\
           .each { |k, v| headers["x-oss-meta-#{k.to_s}"] = v.to_s }
 
         headers.merge!(to_lower_case(opts[:headers])) if opts.key?(:headers)
@@ -581,7 +581,7 @@ module Aliyun
         sub_res = {'append' => nil, 'position' => position}
         headers = {'content-type' => opts[:content_type]}
         headers['x-oss-object-acl'] = opts[:acl] if opts.key?(:acl)
-        to_lower_case(opts[:metas] || {})
+        to_lower_case(opts[:metas] || {})\
           .each { |k, v| headers["x-oss-meta-#{k.to_s}"] = v.to_s }
 
         headers.merge!(to_lower_case(opts[:headers])) if opts.key?(:headers)
@@ -648,14 +648,15 @@ module Aliyun
         doc = parse_xml(r.body)
         encoding = get_node_text(doc.root, 'EncodingType')
         objects = doc.css("Contents").map do |node|
-          Object.new(
-            :key => get_node_text(node, "Key") { |x| decode_key(x, encoding) },
-            :type => get_node_text(node, "Type"),
-            :size => get_node_text(node, "Size", &:to_i),
-            :etag => get_node_text(node, "ETag"),
-            :last_modified =>
-              get_node_text(node, "LastModified") { |x| Time.parse(x) }
-          )
+          tmp_opts = {
+              :key => get_node_text(node, "Key") { |x| decode_key(x, encoding) },
+              :type => get_node_text(node, "Type"),
+              :size => get_node_text(node, "Size", &:to_i),
+              :etag => get_node_text(node, "ETag"),
+              :last_modified =>
+                  get_node_text(node, "LastModified") { |x| Time.parse(x) }
+          }
+          Aliyun::OSS::AliObject.new(tmp_opts)
         end || []
 
         more = {
@@ -673,11 +674,11 @@ module Aliyun
 
         update_if_exists(
           more, {
-            :limit => ->(x) { x.to_i },
-            :truncated => ->(x) { x.to_bool },
-            :delimiter => ->(x) { decode_key(x, encoding) },
-            :marker => ->(x) { decode_key(x, encoding) },
-            :next_marker => ->(x) { decode_key(x, encoding) }
+            :limit => lambda {|x| x.to_i },
+            :truncated => lambda {|x| x.to_bool },
+            :delimiter => lambda {|x| decode_key(x, encoding) },
+            :marker => lambda {|x| decode_key(x, encoding) },
+            :next_marker => lambda {|x| decode_key(x, encoding) }
           }
         )
 
@@ -768,17 +769,20 @@ module Aliyun
         h = r.headers
         metas = {}
         meta_prefix = 'x_oss_meta_'
-        h.select { |k, _| k.to_s.start_with?(meta_prefix) }
+        h.select { |k, _| k.to_s.start_with?(meta_prefix) }\
           .each { |k, v| metas[k.to_s.sub(meta_prefix, '')] = v.to_s }
 
-        obj = Object.new(
-          :key => object_name,
-          :type => h[:x_oss_object_type],
-          :size => wrap(h[:content_length], &:to_i),
-          :etag => h[:etag],
-          :metas => metas,
-          :last_modified => wrap(h[:last_modified]) { |x| Time.parse(x) },
-          :headers => h)
+        tmp_opts = {
+            :key => object_name,
+            :type => h[:x_oss_object_type],
+            :size => wrap(h[:content_length], &:to_i),
+            :etag => h[:etag],
+            :metas => metas,
+            :last_modified => wrap(h[:last_modified]) { |x| Time.parse(x) },
+            :headers => h
+        }
+
+        obj = Aliyun::OSS::AliObject.new(tmp_opts)
 
         logger.debug("Done get object")
 
@@ -811,17 +815,20 @@ module Aliyun
         h = r.headers
         metas = {}
         meta_prefix = 'x_oss_meta_'
-        h.select { |k, _| k.to_s.start_with?(meta_prefix) }
+        h.select { |k, _| k.to_s.start_with?(meta_prefix) }\
           .each { |k, v| metas[k.to_s.sub(meta_prefix, '')] = v.to_s }
 
-        obj = Object.new(
-          :key => object_name,
-          :type => h[:x_oss_object_type],
-          :size => wrap(h[:content_length], &:to_i),
-          :etag => h[:etag],
-          :metas => metas,
-          :last_modified => wrap(h[:last_modified]) { |x| Time.parse(x) },
-          :headers => h)
+        tmp_opts = {
+            :key => object_name,
+            :type => h[:x_oss_object_type],
+            :size => wrap(h[:content_length], &:to_i),
+            :etag => h[:etag],
+            :metas => metas,
+            :last_modified => wrap(h[:last_modified]) { |x| Time.parse(x) },
+            :headers => h
+        }
+
+        obj = Aliyun::OSS::AliObject.new(tmp_opts)
 
         logger.debug("Done get object meta")
 
@@ -862,7 +869,7 @@ module Aliyun
             @http.get_resource_path(bucket_name, src_object_name),
           'content-type' => opts[:content_type]
         }
-        (opts[:metas] || {})
+        (opts[:metas] || {})\
           .each { |k, v| headers["x-oss-meta-#{k.to_s}"] = v.to_s }
 
         {
@@ -976,7 +983,7 @@ module Aliyun
 
         sub_res = {'acl' => nil}
         r = @http.get(
-          {bucket: bucket_name, object: object_name, sub_res: sub_res})
+          {:bucket => bucket_name, :object => object_name, :sub_res => sub_res})
 
         doc = parse_xml(r.body)
         acl = get_node_text(doc.at_css("AccessControlList"), 'Grant')
@@ -1047,7 +1054,7 @@ module Aliyun
 
         sub_res = {'uploads' => nil}
         headers = {'content-type' => opts[:content_type]}
-        to_lower_case(opts[:metas] || {})
+        to_lower_case(opts[:metas] || {})\
           .each { |k, v| headers["x-oss-meta-#{k.to_s}"] = v.to_s }
 
         headers.merge!(to_lower_case(opts[:headers])) if opts.key?(:headers)
@@ -1084,7 +1091,7 @@ module Aliyun
 
         logger.debug("Done upload part")
 
-        Multipart::Part.new(:number => part_no, :etag => r.headers[:etag])
+        Aliyun::OSS::Multipart::Part.new(:number => part_no, :etag => r.headers[:etag])
       end
 
       # Upload a part in a multipart uploading transaction by copying
@@ -1128,7 +1135,7 @@ module Aliyun
 
         logger.debug("Done upload part by copy: #{source_object}.")
 
-        Multipart::Part.new(:number => part_no, :etag => r.headers[:etag])
+        Aliyun::OSS::Multipart::Part.new(:number => part_no, :etag => r.headers[:etag])
       end
 
       # Complete a multipart uploading transaction
@@ -1244,7 +1251,7 @@ module Aliyun
         doc = parse_xml(r.body)
         encoding = get_node_text(doc.root, 'EncodingType')
         txns = doc.css("Upload").map do |node|
-          Multipart::Transaction.new(
+          Aliyun::OSS::Multipart::Transaction.new(
             :id => get_node_text(node, "UploadId"),
             :object => get_node_text(node, "Key") { |x| decode_key(x, encoding) },
             :bucket => bucket_name,
@@ -1269,10 +1276,10 @@ module Aliyun
 
         update_if_exists(
           more, {
-            :limit => ->(x) { x.to_i },
-            :truncated => ->(x) { x.to_bool },
-            :key_marker => ->(x) { decode_key(x, encoding) },
-            :next_key_marker => ->(x) { decode_key(x, encoding) }
+            :limit => lambda{|x| x.to_i },
+            :truncated => lambda{|x| x.to_bool },
+            :key_marker => lambda{|x| decode_key(x, encoding) },
+            :next_key_marker => lambda{|x| decode_key(x, encoding) }
           }
         )
 
@@ -1312,7 +1319,7 @@ module Aliyun
 
         doc = parse_xml(r.body)
         parts = doc.css("Part").map do |node|
-          Multipart::Part.new(
+          Aliyun::OSS::Multipart::Part.new(
             :number => get_node_text(node, 'PartNumber', &:to_i),
             :etag => get_node_text(node, 'ETag'),
             :size => get_node_text(node, 'Size', &:to_i),
@@ -1333,8 +1340,8 @@ module Aliyun
 
         update_if_exists(
           more, {
-            :limit => ->(x) { x.to_i },
-            :truncated => ->(x) { x.to_bool }
+            :limit => lambda{ |x| x.to_i },
+            :truncated => lambda{ |x| x.to_bool }
           }
         )
 

@@ -13,11 +13,11 @@ class TestObjectKey < Minitest::Test
 
     @prefix = 'tests/object_key/'
     @keys = {
-      simple: 'simple_key',
-      chinese: '杭州・中国',
-      space: '是 空格 yeah +-/\\&*#',
-      invisible: '' << 1 << 10 << 12 << 7 << 80 << 99,
-      xml: 'a<b&c>d +'
+      :simple => 'simple_key',
+      :chinese => '杭州・中国',
+      :space => '是 空格 yeah +-/\\&*#',
+      :invisible => '' << 1 << 10 << 12 << 7 << 80 << 99,
+      :xml => 'a<b&c>d +'
     }
   end
 
@@ -28,7 +28,7 @@ class TestObjectKey < Minitest::Test
   def test_simple
     key = get_key(:simple)
     @bucket.put_object(key)
-    all = @bucket.list_objects(prefix: @prefix).map(&:key)
+    all = @bucket.list_objects(:prefix => @prefix).map(&:key)
     assert_includes all, key
     assert_equal key, @bucket.get_object(key).key
   end
@@ -36,7 +36,7 @@ class TestObjectKey < Minitest::Test
   def test_chinese
     key = get_key(:chinese)
     @bucket.put_object(key)
-    all = @bucket.list_objects(prefix: @prefix).map(&:key)
+    all = @bucket.list_objects(:prefix => @prefix).map(&:key)
     assert_includes all, key
     assert_equal key, @bucket.get_object(key).key
   end
@@ -44,7 +44,7 @@ class TestObjectKey < Minitest::Test
   def test_space
     key = get_key(:space)
     @bucket.put_object(key)
-    all = @bucket.list_objects(prefix: @prefix).map(&:key)
+    all = @bucket.list_objects(:prefix => @prefix).map(&:key)
     assert_includes all, key
     assert_equal key, @bucket.get_object(key).key
   end
@@ -52,7 +52,7 @@ class TestObjectKey < Minitest::Test
   def test_invisible
     key = get_key(:invisible)
     @bucket.put_object(key)
-    all = @bucket.list_objects(prefix: @prefix).map(&:key)
+    all = @bucket.list_objects(:prefix => @prefix).map(&:key)
     assert_includes all, key
     assert_equal key, @bucket.get_object(key).key
   end
@@ -62,7 +62,7 @@ class TestObjectKey < Minitest::Test
     keys.each { |k| @bucket.put_object(k) }
     ret = @bucket.batch_delete_objects(keys)
     assert_equal keys, ret
-    all = @bucket.list_objects(prefix: @prefix).map(&:key)
+    all = @bucket.list_objects(:prefix => @prefix).map(&:key)
     assert all.empty?, all.to_s
   end
 end
