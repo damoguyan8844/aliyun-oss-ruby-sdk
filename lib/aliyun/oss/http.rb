@@ -2,7 +2,7 @@
 
 require 'rest-client'
 require 'resolv'
-require 'fiber'
+require 'fibr'
 
 module Aliyun
   module OSS
@@ -88,7 +88,7 @@ module Aliyun
         end
 
         def write(chunk)
-          @buffer << chunk.to_s.force_encoding(Encoding::ASCII_8BIT)
+          @buffer << chunk.to_s#.force_encoding('ASCII_8BIT')
           Fiber.yield
           self
         end
